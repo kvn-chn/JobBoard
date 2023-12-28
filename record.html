@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=no">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="style.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    
+    <title>JobBoard</title>
+</head>
+<body>
+
+  <div class="col">
+    <nav class="navbar navbar-expand-lg navbar-scroll">
+      <div class="container">
+        <h1 class="text-black">JobBoard</h1>
+
+        <div class="collapse navbar-collapse" id="navbarExample01">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item active">
+              <a class="nav-link" aria-current="page" href="index.html">Offer</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="application.html">Application</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="profile.html">Profile</a>
+            </li>
+            <div id="isAdmin"></div>
+            <li class="nav-item">
+              <button class="logout-button" id="logoutButton">Logout</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div id="isRecruiter"></div>
+  </div>
+    <br>
+    <div class="d-grid gap-3">
+      <div id="card-container"></div>
+      </div>
+      <!-- Modal -->
+<div class="modal fade" id="applicationModal" tabindex="-1" aria-labelledby="applicationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="applicationModalLabel">Apply for the Job</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Your application form goes here -->
+        <form id="jobApplicationForm">
+          <div class="mb-3">
+            <label for="name" class="form-label">Your Name</label>
+            <input type="text" class="form-control" id="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="message" class="form-label">Enter your message</label>
+            <textarea type="text" class="form-control" id="message" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="resume" class="form-label">Resume (PDF only)</label>
+            <input type="file" class="form-control" id="resume" accept=".pdf" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" id="submit">Submit Application</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="postAdModal" tabindex="-1" aria-labelledby="postAdModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="postAdModalLabel">Create a new advertisement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Your application form goes here -->
+        <form id="advertisementForm">
+          <div class="mb-3">
+            <label for="name" class="form-label">Enter a title</label>
+            <input type="text" class="form-control" id="title" required>
+          </div>
+          <div class="mb-3">
+            <label for="message" class="form-label">Enter your description</label>
+            <textarea type="text" class="form-control" id="description" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="contract" class="form-label">Choose a type a contract</label>
+            <select id="contract">
+              <option value="Apprentices">Apprentices</option>
+              <option value="Internship">Internship</option>
+              <option value="CDI">CDI</option>
+            </select>
+          </div>
+          <div class="mb3">
+            <label for="location" class="form-label">Location</label>
+            <input type="text" class="form-control" id="location" required>
+          </div>
+          <div class="mb3">
+            <label for="salary" class="form-label">Salary</label>
+            <input type="number" class="form-control" id="salary" required>
+          </div>
+          <div class="mb-3">
+            <label for="expireDate" class="form-label">Expire date (optional)</label>
+            <input type="date" class="form-control" id="date">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" id="submit2">Create advertisement</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="advertisementDetailsModal" tabindex="-1" aria-labelledby="advertisementDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="advertisementDetailsModalLabel">Advertisement Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h1>Description:</h1>
+        <p id="desc"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+      <br>
+    <script>
+
+      let userData;
+
+      const storedUser = localStorage.getItem('user');
+
+      if (storedUser) {
+        userData = JSON.parse(storedUser);
+        console.log(userData);
+      } else {
+        alert('No data');
+      }
+      
+      if (userData.role === 'Admin') {
+        const admin = document.getElementById('isAdmin');
+        admin.innerHTML = `
+        <li class="nav-item">
+          <a class="nav-link" aria-current="page" href="record.html">Record</a>
+        </li>
+        `;
+      }
+
+      if (userData.role === 'Recruiter') {
+        const recruit = document.getElementById('isRecruiter');
+        recruit.innerHTML = `
+        <div class="col">
+        <div class="container">
+          <div class="card-body">
+            <button type="submit" class="btn btn-primary create-button" id="submitpost">Add an advertisement</button>
+          </div>
+        </div>
+      </div>
+        `;
+      }
+
+      // Fetch JSON data for companies
+      fetch('http://localhost:3000/api/advertisements/get') // Replace with your API endpoint for fetching advertisement JSON data
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Network response was not ok');
+        }
+      })
+      .then(data => {
+        // Fetch Blob data for each advertisement and create cards
+        const container = document.getElementById('advertisement-cards-container');
+    
+        // Iterate through the data and fetch blob data for each advertisement
+        data.forEach(item => {
+          fetchBlobData(item)
+            .then(blob => {
+              // Call the function to add cards to the page
+              addCardsToPage(item, blob);
+            })
+            .catch(error => {
+              console.error(error);
+            });
+        });
+      })
+      .catch(error => {
+        console.error(error);
+      });
+    
+    function fetchBlobData(data) {
+      return fetch(`http://localhost:3000/api/companies/photo/get/${data.CompanyID}`) // Replace with the API route for fetching advertisement Blob data
+        .then(response => {
+          if (response.ok) {
+            return response.blob();
+          } else {
+            throw new Error('Network response was not ok');
+          }
+        });
+    }
+    
+    // Function to generate HTML for a card
+    function generateCard(data, blob) {
+      if (blob.size != 0) {
+        console.log(data);
+        return `
+        <div class="col">
+        <div class="card border-info mx-auto margin" style="width: 25rem;">
+          <img class="card-img-top" src="${URL.createObjectURL(blob)}" alt="Company Image" style="width: 5rem">
+          <div class="card-body">
+            <h5 class="card-title">${data.Title}</h5>
+            <p class="card-text">PostDate : ${data.PostDate}</p>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">Contract : ${data.Contract}</li>
+          </ul>
+          <div class="card-body">
+            <button type="button" class="btn btn-primary learn-button" data-job-description="${data.Description}" data-job-salary="${data.Salary} data-job-expirydate="${data.ExpiryDate}">Learn more</button>
+            <button type="button" class="btn btn-primary apply-button" data-advertisement-id="${data.AdvertisementID}" data-job-title="${data.Title}" data-company-id="${data.CompanyID}">Apply</button>
+          </div>
+          <div class="more"></div>
+        </div>
+        </div>
+        <br>
+      `;
+      }
+      else {
+        return `
+        <div class="col">
+        <div class="card border-info mx-auto margin" style="width: 25rem;">
+          <img class="card-img-top" src="">
+          <div class="card-body">
+            <h5 class="card-title">${data.Title}</h5>
+            <p class="card-text">PostDate : ${data.PostDate}</p>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">Contract : ${data.Contract}</li>
+          </ul>
+          <div class="card-body">
+            <button type="button" class="btn btn-primary learn-button" data-job-description="${data.Description}" data-job-salary="${data.Salary} data-job-expirydate="${data.ExpiryDate}">Learn more</button>
+            <button type="button" class="btn btn-primary apply-button" data-advertisement-id="${data.AdvertisementID}" data-job-title="${data.Title}" data-company-id="${data.CompanyID}">Apply</button>
+          </div>
+        </div>
+        </div>
+        <br>
+      `;
+      }
+    }
+    
+    // Function to add cards to the DOM
+    function addCardsToPage(data, blob) {
+      const cardContainer = document.getElementById('card-container');
+      const cardHTML = generateCard(data, blob);
+      cardContainer.innerHTML += cardHTML;
+    }
+
+    document.body.addEventListener('click', function(event) {
+  const target = event.target;
+  if (target.classList.contains('learn-button')) {
+    const getModal = new bootstrap.Modal(document.getElementById('postAdModal'));
+    postModal.show();
+  }
+
+  if (target.classList.contains('create-button')) {
+    
+    const user = JSON.parse(localStorage.getItem('user'));
+    console.log(user.companyID);
+    //console.log(target.dataset);
+    const postModal = new bootstrap.Modal(document.getElementById('postAdModal'));
+    postModal.show();
+    document.getElementById('postAdModalLabel').textContent = `Create a new advertisement`;
+    document.getElementById("name").value = userData.name;
+    const sub2 = document.getElementById('submit2');
+
+   
+
+    
+   // console.log(document.getElementById('date').value);
+    sub2.addEventListener('click', function(event) {
+      event.preventDefault();
+      const Data = {};
+      Data["CompanyID"] = user.companyID;
+      Data["Title"] = document.getElementById('title').value;
+      Data["Description"] = document.getElementById('description').value;
+      Data["Contract"] = document.getElementById('contract').value;
+      Data["Location"] = document.getElementById('location').value;
+      Data["Salary"] = document.getElementById('salary').value;
+      Data["PostDate"] = formatDateToYYYYMMDD(new Date());
+      if (document.getElementById('date').value) {
+      Data["ExpiryDate"] = document.getElementById('date').value;
+      }else {
+        const currentDate = new Date();
+        const newDate = new Date(currentDate);
+        newDate.setMonth(currentDate.getMonth() + 1);
+
+       
+        if (newDate.getDate() < currentDate.getDate()) {
+          newDate.setMonth(newDate.getMonth() + 1);
+        }
+
+        Data["ExpiryDate"] = formatDateToYYYYMMDD(newDate);
+      }
+
+
+      createItem(Data);
+      document.getElementById('salary').form.reset();
+      //document.getElementById('message').value="";
+      //document.getElementById('resume').form.reset();
+    })
+  }
+
+  function createItem(newData) {
+    console.log(newData);
+  fetch(`http://localhost:3000/api/advertisements/post`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newData),
+  })
+    .then((response) => {
+      if (response.ok) {
+        console.log('Create successful');
+        return response.json(); 
+      } else {
+        console.error('Create failed');
+      }
+    })
+    .catch((error) => {
+      console.error('Error creating item: ' + error);
+    });
+}
+
+  if (target.classList.contains('apply-button')) {
+
+    const jobTitle = target.dataset.jobTitle;
+    const companyId = target.dataset.companyId;
+    const AdvertisementID = target.dataset.advertisementId;
+    
+    
+    const user = JSON.parse(localStorage.getItem('user'));
+    console.log(user.userID);
+    console.log(companyId);
+    console.log(AdvertisementID);
+    console.log(new Date());
+    const applicationModal = new bootstrap.Modal(document.getElementById('applicationModal'));
+    applicationModal.show();
+    document.getElementById('applicationModalLabel').textContent = `Apply for ${jobTitle}`;
+    document.getElementById("name").value = userData.name;
+    const sub = document.getElementById('submit');
+
+    sub.addEventListener('click', function(event) {
+
+
+      event.preventDefault();
+      const Data = {};
+      Data["AdvertisementID"]=AdvertisementID;
+      Data["CompanyID"]=companyId;
+      Data["PersonID"]=user.userID;
+      Data["ApplicationDate"]=formatDateToYYYYMMDD(new Date());
+      Data["Message"]=document.getElementById('message').value;
+      sendcv(document.getElementById('resume'),Data);
+      document.getElementById('message').value="";
+      document.getElementById('resume').form.reset();
+    })
+  }
+});
+
+function formatDateToYYYYMMDD(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); 
+  const day = String(date.getDate()).padStart(2, '0');
+  
+  const formattedDate = `${year}-${month}-${day}`;
+  return formattedDate;
+}
+    function sendcv(cv, tmpData) {
+      //console.log("here");
+      const formData = new FormData();
+      console.log('tmpData', tmpData);
+      formData.append('pdf', cv.files[0]); 
+      formData.append('AdvertisementID', tmpData.AdvertisementID);
+      formData.append('CompanyID', tmpData.CompanyID);
+      formData.append('PersonID', tmpData.PersonID);
+      formData.append('ApplicationDate', tmpData.ApplicationDate);
+      formData.append('Message', tmpData.Message);
+
+      console.log('formdata', formData);
+
+      fetch(`http://localhost:3000/api/upload/cv`, {
+        method: 'POST',
+        body: formData,
+        // Don't send tmpData here
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Network response was not ok (Status: ${response.status})`);
+          }
+          return response.json(); 
+        })
+        .catch((error) => {
+          console.error('Upload failed:', error);
+        });
+    }
+
+    const logOut = document.getElementById('logoutButton');
+
+    logOut.addEventListener('click', () => {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    })
+
+
+
+    </script>
+</body>
+</html>

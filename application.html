@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=no">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="style.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <title>Application</title>
+</head>
+<body>
+    <div class="col">
+        <nav class="navbar navbar-expand-lg navbar-scroll">
+          <div class="container">
+            <a class="navbar-brand" href="index.html" style="font-size: 2rem;">JobBoard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+    
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link" aria-current="page" href="index.html">Offer</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link active" aria-current="page" href="application.html">Application</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" aria-current="page" href="profile.html">Profile</a>
+                </li>
+                <div id="isAdmin"></div>
+                <br>
+                <li class="nav-item">
+                  <button class="logout-button" id="logoutButton">Logout</button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        <br>
+        <div id="offer"></div>
+      </div>
+    <script>
+
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            var userData = JSON.parse(storedUser);
+            console.log(userData);
+        } else {
+            alert('No data, must login');
+        }
+        
+        if (userData.role === 'Admin') {
+            const admin = document.getElementById('isAdmin');
+            admin.innerHTML = `
+            <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="record.html">Record</a>
+            </li>
+            `;
+        }
+
+        if (userData.role === 'Candidate' || userData.role === 'Admin') {
+          const myOffer = document.getElementById('offer');
+
+          fetch(`http://localhost:3000/api/jobapplications/get/offer/${userData.userID}`, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+              }
+          })
+          .then(response => {
+              if (response.ok) return response.json();
+              else alert('No offer applied yet');;
+          })
+          .then(data => {
+            if (Array.isArray(data.result)) {
+                data.result.forEach(offer => {
+                    console.log(offer);
+                    getAdvertisement(offer);
+                });
+            }
+          })
+          .catch(error => {
+              console.log(error);
+          })
+
+
+          function getAdvertisement(data) {
+              console.log('data', data);
+              fetch(`http://localhost:3000/api/advertisements/get/${data.AdvertisementID}`)
+              .then(response => response.json())
+              .then(adData => {
+                  console.log('data', adData);
+                  adData.forEach(item => {
+                      console.log('item',item)
+                      fetchBlobData(item)
+                          .then(blob => {
+                              console.log('blob', blob);
+                              addCardsToPage(item, blob, data);
+                          })
+                          .catch(error => {
+                              console.error(error);
+                              });
+                  })
+              })
+              .catch(error => {
+                  console.error(error);
+                  });
+          }
+
+          function fetchBlobData(data) {
+            console.log(data);
+              return fetch(`http://localhost:3000/api/companies/photo/get/${data.CompanyID}`) // Replace with the API route for fetching advertisement Blob data
+                .then(response => {
+                  if (response.ok) {
+                    return response.blob();
+                  } else {
+                    throw new Error('Network response was not ok');
+                  }
+                });
+            }
+
+            function addCardsToPage(item, blob, data) {
+              const cardContainer = document.getElementById('offer');
+              const cardHTML = generateCard(item, blob, data);
+              cardContainer.innerHTML += cardHTML;
+            }
+
+            // Define an array to store card IDs
+            const cardIds = [];
+
+            function generateCard(item, blob, data) {
+              console.log('item', item , 'data', data);
+                const cardId = `${data.ApplicationID}`;
+                cardIds.push(cardId); // Add the card ID to the array
+                if (blob.size != 0) {
+                  return `
+                    <div class="col">
+                        <div class="card border-info mx-auto margin" style="width: 25rem;">
+                            <img class="card-img-top" src="${URL.createObjectURL(blob)}" style="width: 5rem">
+                            <div class="card-body">
+                                <h5 class="card-title">${item.Title}</h5>
+                                <p class="card-text">Description : ${item.Description}</p>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Type : ${item.Contract}</li>
+                            </ul>
+                            <div class="card-body">
+                              <p class="card-text">Your message : ${data.Message}</p>
+                              <p class="card-text">Application Date : ${data.ApplicationDate}</p>
+                              <button type="button" class="btn btn-primary delete-button">Delete application</button>
+                            </div>
+                            <div class="more"></div>
+                            <span id="${cardId}"></span>
+                        </div>
+                    </div>
+                    <br>
+                `;
+                }
+                else {
+                  return `
+                    <div class="col">
+                        <div class="card border-info mx-auto margin" style="width: 25rem;">
+                            <img class="card-img-top" src="" style="width: 5rem">
+                            <div class="card-body">
+                                <h5 class="card-title">${item.Title}</h5>
+                                <p class="card-text">Description : ${item.Description}</p>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Type : ${item.Contract}</li>
+                            </ul>
+                            <div class="card-body">
+                              <p class="card-text">Your message : ${data.Message}</p>
+                              <p class="card-text">Application Date : ${data.ApplicationDate}</p>
+                              <button type="button" class="btn btn-primary delete-button">Delete application</button>
+                            </div>
+                            <div class="more"></div>
+                            <span id="${cardId}"></span>
+                        </div>
+                    </div>
+                    <br>
+                `;
+                }
+            }
+
+            document.body.addEventListener('click', function (event) {
+                const target = event.target;
+
+                // Check if the clicked element has the class 'delete-button'
+                if (target.classList.contains('delete-button')) {
+                    if (confirm("Are you sure you want to delete this offer?")) {
+                        // Find the index of the clicked delete button and use it to get the card ID
+                        const deleteButtonIndex = Array.from(document.querySelectorAll('.delete-button')).indexOf(target);
+                        if (deleteButtonIndex !== -1 && deleteButtonIndex < cardIds.length) {
+                            const cardId = cardIds[deleteButtonIndex];
+                            fetch(`http://localhost:3000/api/jobapplications/delete/${cardId}`, {
+                              method: 'DELETE',
+                              body: cardId,
+                            })
+                              .then(response => response.json())
+                              .then(data => {
+                                  console.log(data)
+                              })
+                              .catch(error => {
+                                  console.error(error);
+                              });
+                        }
+                    }
+                }
+            });
+        }
+        else if (userData.role === 'Recruiter') {
+          const myOffer = document.getElementById('offer');
+
+          fetch(`http://localhost:3000/api/jobapplications/get/offer/company/${userData.companyID}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          })
+            .then(response => {
+              if (response.ok) return response.json();
+              else throw new Error('No offer applied yet'); // Throw an error instead of using alert
+            })
+            .then(data => {
+              if (data.result && data.result.length > 0) {
+                getAdvertisement(data.result[0]);
+                data.result.forEach(companyData => {
+                  console.log('company', companyData);
+                  getApplication(companyData);
+                });
+              } else {
+                console.error('No data available.');
+              }
+            })
+            .catch(error => {
+              console.error('Error fetching job applications:', error);
+            });
+          
+          function getAdvertisement(companyData) {
+            fetch(`http://localhost:3000/api/advertisements/get/company/${companyData.CompanyID}`)
+              .then(response => {
+                if (response.ok) return response.json();
+                else throw new Error('Error fetching advertisements');
+              })
+              .then(adData => {
+                console.log('adData', adData);
+                getApplication(companyData, adData);
+              })
+              .catch(error => {
+                console.error('Error fetching advertisements:', error);
+              });
+          }
+          
+          function getApplication(companyData, adData) {
+            fetch(`http://localhost:3000/api/people/get/${companyData.PersonID}`)
+              .then(response => {
+                if (response.ok) return response.json();
+                else throw new Error('Error fetching people data');
+              })
+              .then(peopleData => {
+                console.log('peopleData',peopleData);
+                peopleData.forEach(name => {
+                  console.log('name', name);
+                  addCardsToPage(peopleData, adData, companyData);
+                });
+              })
+              .catch(error => {
+                console.error('Error fetching people data:', error);
+              });
+          }
+          
+          function addCardsToPage(peopleData, adData, companyData) {
+            console.log('peopleData', peopleData, 'adData', adData, 'companyData', companyData);
+            console.log('peopleData', peopleData);
+            console.log('adData', adData);
+            console.log('companyData', companyData);
+          
+            const cardContainer = document.getElementById('offer');
+            
+            if (adData && adData.result && adData.result.length > 0) {
+              const cardHTML = generateCard(peopleData, adData.result[0], companyData);
+              cardContainer.innerHTML += cardHTML;
+            } else {
+              console.error('No adData available.');
+            }
+          }
+          
+          const cardIds = [];
+          
+          function generateCard(peopleData, adData, companyData) {
+            const cardId = `${companyData.ApplicationID}`;
+            cardIds.push(cardId); // Add the card ID to the array
+            return `
+              <div class="col">
+                <div class="card border-info mx-auto margin" style="width: 25rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">${peopleData[0].Name}</h5>
+                        <p class="card-text">Message : ${companyData.Message}</p>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Type : ${adData.Contract}</li>
+                    </ul>
+                    <div class="card-body">
+                      <p class="card-text">Application Date : ${companyData.ApplicationDate}</p>
+                      <p class="card-text"> <div id="cv"></div> </p>
+                      <button type="button" class="btn btn-primary delete-button">Accept</button>
+                      <button type="button" class="btn btn-primary delete-button">Decline</button>
+                    </div>
+                    <div class="more"></div>
+                    <span id="${cardId}"></span>
+                </div>
+              </div>
+              <br>
+            `;
+          }
+
+          function getcv(companyData) {
+            fetch(`http://localhost:3000/api/jobapplications/cv/get/${companyData.ApplicationID}`)
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error(`Network response was not ok (Status: ${response.status})`);
+                }
+                return response.blob();
+              })
+              .then(blob => {
+                const cv = document.getElementById('cv');
+                const addcv=document.createElement("a");
+                addcv.href="";
+                addcv.textContent="View CV";
+                addcv.target="_blank";
+                addcv.download="cv.pdf";
+                cv.appendChild(addcv);
+                var url = URL.createObjectURL(blob);
+                console.log(url);
+                addcv.setAttribute('href', url); // Set the image source
+              })
+              .catch(error => {
+                console.error(error);
+              });
+          }
+          
+
+          document.body.addEventListener('click', function (event) {
+            const target = event.target;
+
+            // Check if the clicked element has the class 'delete-button'
+            if (target.classList.contains('delete-button')) {
+                if (confirm("Are you sure you want to delete this offer?")) {
+                    // Find the index of the clicked delete button and use it to get the card ID
+                    const deleteButtonIndex = Array.from(document.querySelectorAll('.delete-button')).indexOf(target);
+                    if (deleteButtonIndex !== -1 && deleteButtonIndex < cardIds.length) {
+                        const cardId = cardIds[deleteButtonIndex];
+                        fetch(`http://localhost:3000/api/jobapplications/delete/${cardId}`, {
+                          method: 'DELETE',
+                          body: cardId,
+                        })
+                          .then(response => response.json())
+                          .then(data => {
+                              console.log(data)
+                          })
+                          .catch(error => {
+                              console.error(error);
+                          });
+                    }
+                }
+            }
+        });
+        }
+        const logOut = document.getElementById('logoutButton');
+
+        logOut.addEventListener('click', () => {
+          localStorage.clear();
+          window.location.href = 'login.html';
+        })
+    </script>
+</body>
+</html>

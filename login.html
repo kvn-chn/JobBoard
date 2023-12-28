@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+    <style>
+        .gradient-custom {
+            background: linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1))
+        }
+    </style>
+</head>
+<body style="height: 100%;">
+    <section class="gradient-custom h-100">
+        <div class="container py-5 h-100">
+          <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+              <div class="card bg-dark text-white" style="border-radius: 1rem;">
+                <div class="card-body p-5 text-center">
+      
+                  <div class="mb-md-5 mt-md-4 pb-5">
+      
+                    <h2 class="fw-bold mb-2 text-uppercase">Login</h2>
+                    <p class="text-white-50 mb-5">Please enter your login and password</p>
+      
+                    <form id="loginForm">
+                        <div class="form-outline form-white mb-4">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control form-control-lg" />
+                        </div>
+          
+                        <div class="form-outline form-white mb-4">
+                            <label class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control form-control-lg" />
+                        </div>
+
+                        <div id="loginStatut"></div>
+                        <div id="statut" class="alert alert-danger" role="alert" style="display: none;">Password or email incorrect</div>
+                    
+                        <button type="submit" class="btn btn-outline-light btn-lg px-5">Login</button>
+                    </form>
+      
+                  </div>
+      
+                  <div>
+                    <p class="mb-0">Don't have an account? <a href="signup.html" class="text-white-50 fw-bold">Sign Up</a>
+                    </p>
+                  </div>
+      
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    <script>
+      document.getElementById('loginForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        let token = '';
+      
+        const formData = new FormData(this);
+        const formDataObject = {};
+        formData.forEach((value, key) => {
+          formDataObject[key] = value;
+        });
+      
+        console.log(formDataObject);
+      
+        try {
+          const response = await fetch('http://localhost:3000/api/people/post/login', {
+            method: 'POST',
+            body: JSON.stringify(formDataObject),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+      
+          if (!response.ok) {
+            throw new Error('Login request failed');
+          }
+      
+          const data = await response.json();
+      
+          console.log(data);
+          if (data.success === true) {
+            console.log('Password correct');
+            token = data.token;
+            console.log(data.token);
+            console.log('data', data);
+      
+            let userData;
+      
+            if (data.result[0].Role === 'Recruiter') {
+              userData = {
+                userID: data.result[0].PersonID,
+                name: data.result[0].Name,
+                email: data.result[0].Email,
+                phone: data.result[0].Phone,
+                role: data.result[0].Role,
+                companyID: data.result[0].CompanyID,
+              };
+            } else {
+              userData = {
+                userID: data.result[0].PersonID,
+                name: data.result[0].Name,
+                email: data.result[0].Email,
+                phone: data.result[0].Phone,
+                role: data.result[0].Role,
+              };
+            }
+      
+            console.log(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
+      
+            const authResponse = await fetch('http://localhost:3000/api/people/post/login/auth', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'authorization': token
+              }
+            });
+      
+            if (!authResponse.ok) {
+              throw new Error('Authentication request failed');
+            }
+      
+            const authData = await authResponse.json();
+            console.log(authData);
+      
+            if (authData.success === true) {
+              const statutElement = document.getElementById('statut');
+              statutElement.style.display = "none";
+              const log = document.getElementById('loginStatut');
+              const success = document.createElement('div');
+              success.className = 'alert alert-success';
+              success.role = 'alert';
+              success.textContent = "Login successful";
+              log.appendChild(success);
+      
+              const storedUser = localStorage.getItem('user');
+              const userData = JSON.parse(storedUser);
+      
+              if (userData.role === "Admin") {
+                setTimeout(function() {
+                  window.location.href = 'record.html';
+                }, 1500);
+              } else {
+                setTimeout(function() {
+                  window.location.href = 'index.html';
+                }, 1500);
+              }
+            }
+          } else {
+            const statutElement = document.getElementById('statut');
+            statutElement.style.display = "block";
+          }
+        } catch (error) {
+          alert(error);
+          console.error('Error: ' + error);
+        }
+      
+        console.log('Token being sent:', token);
+      });
+      
+    </script> 
+</body>
+</html>

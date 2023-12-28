@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="style.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <title>Document</title>
+</head>
+<body>
+  <div class="col">
+  <nav class="navbar navbar-expand-lg navbar-scroll">
+    <div class="container">
+        <a class="navbar-brand" href="index.html" style="font-size: 2rem;">JobBoard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                  <a class="nav-link" href="index.html">Offer</a>
+              </li>
+              <li class="nav-item">
+                  <a class="nav-link" href="application.html">Application</a>
+              </li>
+              <li class="nav-item">
+                  <a class="nav-link active" href="profile.html">Profile</a>
+              </li>
+              <li class="nav-item" id="isAdmin"></li>
+              <br>
+              <li class="nav-item">
+                <button class="logout-button" id="logoutButton">Logout</button>
+              </li>
+            </ul>
+        </div>
+    </div>
+  </nav>
+  </div>
+
+
+<section style="background-color: #eee;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fsonderdram.com%2Fwp-content%2Fuploads%2F2018%2F04%2FPerson-Icon.png&f=1&nofb=1&ipt=a506a75afd6e658c96425ef945ee259caa084f5248feadc60bcf0ad9096285d8&ipo=images" alt="avatar"
+                            class="rounded-circle img-fluid" style="width: 150px;">
+                    </div>
+                    <div class="card-body">
+                        <div id="information" class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">User Information</h5>
+                                <ul class="list-group list-group-flush">
+                                    <!-- <li class="list-group-item"><strong>User ID:</strong> <span id="UserID">12345</span></li>
+                                    <li class="list-group-item"><strong>Name:</strong> <span id="Name">John Smith</span></li> -->
+                                    <div id="info"></div>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+      <script>
+        const storedUser = localStorage.getItem('user');
+
+      if (storedUser) {
+        var userData = JSON.parse(storedUser);
+        console.log(userData);
+      } else {
+        alert('No data, please reconnect');
+        window.location.href = 'login.html';
+      }
+
+      if (userData.role === 'Admin') {
+        const admin = document.getElementById('isAdmin');
+        admin.innerHTML = `
+        <li class="nav-item">
+          <a class="nav-link" aria-current="page" href="record.html">Record</a>
+        </li>
+        `;
+      }
+
+      table = ['UserID', 'Name', 'Email', 'Phone', 'Role', 'CompanyID'];
+      for (item in userData) {
+        const information = document.getElementById('info');
+        information.innerHTML += `
+        <li class="list-group-item"><strong>${item} : </strong> <span id="${item}">${userData[item]}</span></li>
+        `;
+      }
+
+      const logOut = document.getElementById('logoutButton');
+
+      logOut.addEventListener('click', () => {
+        localStorage.clear();
+        window.location.href = 'login.html';
+      })
+      
+      </script>
+</body>
+</html>

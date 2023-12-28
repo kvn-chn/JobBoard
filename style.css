@@ -1,0 +1,83 @@
+/* Color of the links BEFORE scroll */
+.navbar-scroll .nav-link,
+.navbar-scroll .fa-bars,
+.navbar-scroll .navar-brand {
+  color: #ffffff;
+}
+
+.navbar-scroll .nav-link:hover {
+  color: #1266f1;
+}
+
+/* Color of the links AFTER scroll */
+.navbar-scrolled .nav-link,
+.navbar-scrolled .fa-bars,
+.navbar-scrolled .navar-brand {
+  color: #4f4f4f;
+}
+
+/* Color of the navbar AFTER scroll */
+.navbar-scroll,
+.navbar-scrolled {
+  background-color: #fff;
+}
+
+/* An optional height of the navbar AFTER scroll */
+.navbar.navbar-scroll.navbar-scrolled {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+body {
+  background-color: #eee;
+}
+
+.logout-button {
+  background-color: red; /* Set the background color to red */
+  color: white; /* Set the text color to white or another color that provides good contrast */
+  border: none; /* Remove the button border */
+  padding: 8px 10px; /* Adjust padding as needed */
+  cursor: pointer; /* Show a pointer cursor on hover to indicate it's clickable */
+  border-radius: 14%;
+}
+
+/* style.css */
+
+/* Add custom styles to the navigation bar */
+.navbar {
+  background-color: #007bff; /* Change the background color */
+  color: white; /* Change the text color */
+}
+
+/* Style the buttons */
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+/* Customize card appearance */
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.05); /* Add hover effect */
+}
+
+/* Style form elements */
+.form-control {
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+/* Customize modal dialog */
+.modal-content {
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Add more custom styles based on your preferences */
