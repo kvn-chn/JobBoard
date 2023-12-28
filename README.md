@@ -1,5 +1,6 @@
-# T-WEB-501-PAR_35
+# JobBoard
 
+Projet réalisé en Octobre 2023 sur une durée de 2 semaines dans un groupe à 2.
 
 Front-end : HTML CSS Javascript
 
